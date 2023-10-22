@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { AiFillRightCircle } from 'react-icons/ai';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import LinkWithBack from '../../../components/LinkWithBack/LinkWithBack';
 const Medicine = () => {
   const { spinnerElement , spinner , setSpinner } = useContext(ShowContext);
   useEffect(() => {
@@ -36,12 +37,8 @@ const Medicine = () => {
       className={style.dashboard + " d-flex flex-column px-sm-5 px-0 pb-4`"}
     >
       {spinner && spinnerElement}
-      <div className="d-flex flex-row align-items-center mb-2 gap-2">
-        <Link to="/stock">
-          <AiFillRightCircle size={24} fill="#28465C" />
-        </Link>
-        <p className="mainTitle">الأدوية</p>
-      </div>      <Row
+      <LinkWithBack link='/stock' title='الأدوية' />
+      <Row
         lg="3"
         sm="1"
         md="2"

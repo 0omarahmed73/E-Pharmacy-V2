@@ -26,6 +26,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import InputAutoComplete2 from "../../../components/InputAutoComplete2/InputAutoComplete2";
 import axiosApi from "../../../data/axios";
+import LinkWithBack from "../../../components/LinkWithBack/LinkWithBack";
 const Dispense = () => {
   const location = useLocation();
   const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
@@ -154,23 +155,25 @@ const Dispense = () => {
         ["university-year"]: "الفرقة الرابعة",
       },
       {
-        name : 'عمر احمد سعيد السيد',
-        phone : '01516111111',
-        national : 12356777712345,
-        collage : 'هندسة',
-        ["university-year"] : 'الفرقة الرابعة'
+        name: 'عمر احمد سعيد السيد',
+        phone: '01516111111',
+        national: 12356777712345,
+        collage: 'هندسة',
+        ["university-year"]: 'الفرقة الرابعة'
       },
       {
-        name : 'احمد محمد احمد',
-        phone : '01024197972',
-        national : 12353282124532,
-        collage : 'هندسة',
-        ["university-year"] : 'الفرقة الرابعة'
-      },
+        name: 'احمد محمد احمد',
+        phone: '01024197972',
+        national: 12353282124532,
+        collage: 'هندسة',
+        ["university-year"]: 'الفرقة الرابعة'
+      }
     ].filter((el) => el.name.includes(formik.values.stdname));
-    setAllValues(stdd)
+    setAllValues(stdd);
     setStds(stdd.map((el) => el.name));
   };
+  
+
   const handleDelete = (id) => {
     const newMedicine = medicines.filter((medi) => medi.id !== id);
     setMedicines(newMedicine);
@@ -213,12 +216,7 @@ const Dispense = () => {
       className={`${style.dispense} d-flex flex-column px-sm-5 px-0 pb-4`}
     >
       {spinner && spinnerElement}
-      <div className="d-flex flex-row align-items-center mb-2 gap-2">
-        <Link to="/stock">
-          <AiFillRightCircle size={24} fill="#28465C" />
-        </Link>
-        <p className="mainTitle">صرف الأدوية</p>
-      </div>
+      <LinkWithBack link={"/stock"} title={"صرف الأدوية"} />
       <Form autoSave={"on"} onSubmit={formik.handleSubmit}>
         <Row lg="3" xs="1" md="2">
           <Col>

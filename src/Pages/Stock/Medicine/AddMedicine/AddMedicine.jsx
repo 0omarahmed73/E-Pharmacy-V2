@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import { PiFactoryFill } from "react-icons/pi";
 import { AiFillRightCircle } from "react-icons/ai";
 import * as Yup from "yup";
+import LinkWithBack from "../../../../components/LinkWithBack/LinkWithBack";
 const AddMedicine = () => {
   useDocumentTitle("اضافة دواء جديد");
   const location = useLocation();
@@ -82,12 +83,7 @@ const AddMedicine = () => {
       className={style.medicine + " d-flex flex-column px-sm-5 px-0 pb-4`"}
     >
       {spinner && spinnerElement}
-      <div className="d-flex flex-row align-items-center mb-2 gap-2">
-        <Link to="/stock/medicines">
-          <AiFillRightCircle size={24} fill="#28465C" />
-        </Link>
-        <p className="mainTitle">إضافة دواء</p>
-      </div>
+      <LinkWithBack title="اضافة دواء جديد" link="/stock/medicines" />
       <Form onSubmit={formik.handleSubmit} className="pb-4">
         <Row lg="2" xs="1" md="2">
           <Col>

@@ -1,9 +1,15 @@
 .input {
   width: fit-content;
   position: relative;
+  transition: 0.5s;
   & input {
     border-radius: 10px 10px 0 0 !important;
     padding-left: 20px !important;
+    &:focus {
+      border-width: 1.5px;
+      border-color: var(--mainColor) !important;
+      box-shadow: none !important;
+    }
   }
 }
 

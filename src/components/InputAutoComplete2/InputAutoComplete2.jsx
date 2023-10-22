@@ -26,29 +26,27 @@ const InputAutoComplete2 = ({
   falseChange,
   ...props
 }) => {
-  useEffect(() => {
-      sessionStorage.setItem(`${name}-${window.location.pathname}`, value);
-  }, [name, value]);
   const [showDropDown, setShowDropDown] = useState(false);
   const [selected, setSelected] = useState(false);
   useEffect(() => {
+    sessionStorage.setItem(`${name}-${window.location.pathname}`, value);
     if (value.trim().length > 0 && !selected && change) {
       setShowDropDown(true);
       dropFunction();
     } else {
       setShowDropDown(false);
     }
-  }, [change, dropFunction, selected, value]);
-  useEffect(() => {
+
     if (selected && change) {
       setSelected(false);
       setShowDropDown(true);
     }
-  }, [change, selected]);
+  }, [name, value, selected, change]);
   return (
     <Form.Group className={style.input} style={{ width: width }}>
       <FloatingLabel controlId={id} label={label}>
         <Form.Control
+          autoComplete="off"
           value={value}
           name={name}
           {...props}
@@ -67,18 +65,22 @@ const InputAutoComplete2 = ({
               <div
                 key={index}
                 onClick={() => {
-                  falseChange()
+                  falseChange();
                   formik ? setValue(name, item) : setValue(item);
-                  formik && linkedAttr ? (
-                    linkedAttr.map((attr) => {
-                      setValue(attr, allValues.find((val) => val.name === item)[attr]);
-                    }
-                  )) : !formik && linkedAttr ? (
-                    linkedAttr.map((attr => {
-                      attr.setValue(allValues.find((val) => val.name === item)[attr.name]);
-                    }
-                  ))) : null;
-                  console.log('HH');
+                  formik && linkedAttr
+                    ? linkedAttr.map((attr) => {
+                        setValue(
+                          attr,
+                          allValues.find((val) => val.name === item)[attr]
+                        );
+                      })
+                    : !formik && linkedAttr
+                    ? linkedAttr.map((attr) => {
+                        attr.setValue(
+                          allValues.find((val) => val.name === item)[attr.name]
+                        );
+                      })
+                    : null;
                   setShowDropDown(false);
                   setSelected(true);
                 }}

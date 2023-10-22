@@ -15,6 +15,10 @@ import { Form } from "react-bootstrap";
 import * as Yup from "yup";
 import { useCallback } from "react";
 import ButtonSubmit from "../../components/ButtonSubmit";
+import List from './../../components/List/List';
+import MedicineItem from './../../components/MedicineItem/MedicineItem';
+import { Notification } from './../../components/Notification/Notification';
+import { BiPencil } from "react-icons/bi";
 const Dashboard = () => {
   const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
   const { success, setSuccess, user } = useContext(AuthContext);
@@ -54,7 +58,6 @@ const Dashboard = () => {
       {spinner && spinnerElement}
       <h1 className="mainTitle py-2">الرئيسية</h1>
       <Row>
-        
       </Row>
       <ToastContainer position="bottom-center" hideProgressBar  className='mb-2' rtl={true} />
     </motion.div>

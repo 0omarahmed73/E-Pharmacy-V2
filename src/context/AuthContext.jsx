@@ -9,14 +9,24 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const secret  = import.meta.env.VITE_SECRET;
+  const secret = import.meta.env.VITE_SECRET;
+  if (
+    Cookies.get("user")
+  ) {
+    if (
+      CryptoJS.AES.decrypt(Cookies.get("user"), secret).toString(
+        CryptoJS.enc.Utf8
+      ) === ""
+    ) {
+      Cookies.remove("user");
+    }
+  }
   const [user, setUser] = useState(
     Cookies.get("user")
       ? JSON.parse(
-          CryptoJS.AES.decrypt(
-            Cookies.get("user"),
-            secret
-          ).toString(CryptoJS.enc.Utf8)
+          CryptoJS.AES.decrypt(Cookies.get("user"), secret).toString(
+            CryptoJS.enc.Utf8
+          )
         )
       : null
   );
@@ -38,10 +48,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       Cookies.set(
         "user",
-        CryptoJS.AES.encrypt(
-          JSON.stringify(data),
-          secret
-        ).toString(),
+        CryptoJS.AES.encrypt(JSON.stringify(data), secret).toString(),
         {
           expires: 1,
           secure: true,
@@ -58,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   };
+  console.log();
   return (
     <AuthContext.Provider
       value={{ user, setUser, login, error, loading, success, setSuccess }}

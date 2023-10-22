@@ -1,9 +1,6 @@
 import { FloatingLabel, Form } from "react-bootstrap";
 import style from "./Input.module.css";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useContext } from "react";
-import { ShowContext } from "../../context/ShowContext";
 
 const Input = ({label , icon , id , name , width , value , error , touched , ...props}) => {
     useEffect(() => {

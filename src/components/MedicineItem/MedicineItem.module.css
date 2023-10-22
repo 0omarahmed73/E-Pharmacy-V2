@@ -6,7 +6,11 @@
   padding-inline:20px 15px;
   padding-block: 5px;
   align-items: center;
-  height: fit-content;
+  justify-content: center;
+  @media screen and (max-width: 600px) {
+    width: 100%;
+    
+  }
 }
 h1.index {
   flex : 0.5;
@@ -27,16 +31,23 @@ h1.medicine {
   flex: 0.2;
   display: flex;
   gap: 5px;
+  margin-top: -3px;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-
-  & > * {
-    transition: all 0.3s linear;
-    &:hover {
-      color: var(--mainColor);
-    }
+}
+.bordered {
+  border: 2px solid var(--mainColor);
+  width: 20px;
+  height: 20px;
+  border-radius: 20px;
+  padding: 2px;
+  background-color: var(--mainColor);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s linear;
+  &:hover {
+    background-color: white;
+    color: var(--mainColor);
   }
 }
-
-

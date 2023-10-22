@@ -17,6 +17,7 @@ import { ShowContext } from "../../../context/ShowContext";
 import axiosApi from "../../../data/axios";
 import { motion } from "framer-motion";
 import InputAutoComplete2 from "../../../components/InputAutoComplete2/InputAutoComplete2";
+import LinkWithBack from "../../../components/LinkWithBack/LinkWithBack";
 const NewOrder = () => {
   const [change , setChange] = useState(false);
   const falseChange = () => {
@@ -154,12 +155,7 @@ const NewOrder = () => {
       className={`${style.newOrder} d-flex flex-column px-sm-5 px-0 pb-4 w-md-75 w-sm-100 w-lg-100`}
     >
       {spinner && spinnerElement}
-      <div className="d-flex flex-row align-items-center mb-2 gap-2">
-        <Link to="/stock">
-          <AiFillRightCircle size={24} fill="#28465C" />
-        </Link>
-        <p className="mainTitle">اضافة طلبية جديدة</p>
-      </div>
+      <LinkWithBack title="إضافة طلبية جديدة" link="/stock" />
       <Form onSubmit={formik.handleSubmit}>
         <Row className="flex-wrap" lg="2" xs="1" md="1">
           <Col>

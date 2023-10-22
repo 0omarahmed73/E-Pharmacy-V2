@@ -1,6 +1,7 @@
+import { BiPencil } from "react-icons/bi";
 import style from "./MedicineItem.module.css";
-import { BsFillArrowLeftCircleFill } from "react-icons/bs";
-const MedicineItem = ({name , idx , ...props}) => {
+import { BsArrowLeft, BsFillArrowLeftCircleFill } from "react-icons/bs";
+const MedicineItem = ({name , idx , icon , ...props}) => {
   return (
   <div {...props}>
       <div className={style.item}>
@@ -9,11 +10,11 @@ const MedicineItem = ({name , idx , ...props}) => {
           {name}
         </h1>
         <div className={style.icons}>
-          <div className={style.arrow}>
-            <BsFillArrowLeftCircleFill size={20} />
+          <div>
+            <BiPencil className={style.bordered} />
           </div>
-          <div className={style.arrow}>
-            <BsFillArrowLeftCircleFill size={20} />
+          <div>
+            <BsArrowLeft className={style.bordered} />
           </div>
         </div>
       </div>
