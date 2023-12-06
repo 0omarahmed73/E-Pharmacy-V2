@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import style from "./AddAccount.module.css";
 import Input from "../../components/input/Input";
@@ -12,19 +12,25 @@ import ButtonSubmit from "../../components/ButtonSubmit";
 import SVGNewAccount from "../../components/SVGNewAccount";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { ShowContext } from "../../context/ShowContext";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
+import { Button } from "react-bootstrap";
+import { BiReset } from "react-icons/bi";
+import { Tooltip } from "react-tooltip";
+import { AuthContext } from "../../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
 const AddAccount = () => {
-  const { spinnerElement , spinner , setSpinner } = useContext(ShowContext);
+  const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
+  const { registerUser, loading, setLoading } = useContext(AuthContext);
   useEffect(() => {
     setSpinner(true);
     const setTime = setTimeout(() => {
       setSpinner(false);
     }, 300);
     return () => {
-      clearInterval(setTime)
-    }
-  } , [setSpinner]);
-  useDocumentTitle('إضافة حساب جديد')
+      clearInterval(setTime);
+    };
+  }, [setSpinner]);
+  useDocumentTitle("إضافة حساب جديد");
   const formik = useFormik({
     validateOnMount: true,
     initialValues: {
@@ -46,38 +52,68 @@ const AddAccount = () => {
         .string()
         .required("الرجاء التاكد من ادخال كلمة المرور")
         .min(6, "كلمة المرور يجب ان تكون اكبر من 6 أحرف"),
-        name : yup.string().required('الرجاء ادخال الاسم'),
-        phone : yup.string().required('الرجاء ادخال رقم الهاتف').test("maxDigits", 'الرجاء ادخال رقم هاتف صحيح', (value) => value.length === 10 ),
-        national : yup.string().required('الرجاء ادخال رقم القومي').test("maxDigits", 'الرجاء ادخال رقم قومي صحيح', (value) => value.length === 14 ),
-        type : yup.string().required('الرجاء ادخال الدرجة في النظام'),
+      name: yup.string().required("الرجاء ادخال الاسم"),
+      phone: yup
+        .string()
+        .required("الرجاء ادخال رقم الهاتف")
+        .test(
+          "maxDigits",
+          "الرجاء ادخال رقم هاتف صحيح",
+          (value) => value.length === 10
+        ),
+      national: yup
+        .string()
+        .required("الرجاء ادخال رقم القومي")
+        .test(
+          "maxDigits",
+          "الرجاء ادخال رقم قومي صحيح",
+          (value) => value.length === 14
+        ),
+      type: yup.string().required("الرجاء ادخال الدرجة في النظام"),
     }),
     onSubmit: (values) => {
-      console.log(values);
-      formik.resetForm();
-      formik.setValues({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        national: "",
-        type: "",
-      });
+      setLoading(true);
+      try {
+        registerUser(values);
+        sessionStorage.removeItem(`name-${window.location.pathname}`);
+        sessionStorage.removeItem(`email-${window.location.pathname}`);
+        sessionStorage.removeItem(`password-${window.location.pathname}`);
+        sessionStorage.removeItem(`phone-${window.location.pathname}`);
+        sessionStorage.removeItem(`national-${window.location.pathname}`);
+        sessionStorage.removeItem(`type-${window.location.pathname}`);
+        console.log(values);
+        formik.resetForm();
+        formik.setValues({
+          name: "",
+          email: "",
+          password: "",
+          phone: "",
+          national: "",
+          type: "",
+        });
+        toast.success("تم إضافة الحساب بنجاح");
+      } catch (error) {
+        toast.error("حدث خطأ ما , الرجاء المحاولة مرة اخرى");
+      }
+      setLoading(false);
     },
   });
   return (
     <motion.div
-    initial={{ scale: 0 }}
-    animate={{ scale: 1 }}
-    transition={{
-      type: "spring",
-      stiffness: 260,
-      damping: 20,
-    }}
-     style={{margin : 'auto'} } className={`${style.addAccount} d-flex flex-column px-sm-5 px-0`}>
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+      }}
+      style={{ margin: "auto" }}
+      className={`${style.addAccount} d-flex flex-column px-sm-5 px-0`}
+    >
       {spinner && spinnerElement}
       <p className="mainTitle mb-2">إضافة حساب جديد</p>
       <Form onSubmit={formik.handleSubmit} className="pb-4">
-        <Row lg="2" xs="1" md='2'>
+        <Row lg="2" xs="1" md="2">
           <Col>
             <Input
               className="text-end"
@@ -144,7 +180,7 @@ const AddAccount = () => {
               onChange={formik.handleChange}
               width={"100%"}
               label="الدرجة في النظام"
-              type="number"
+              type="text"
               id="type"
               name="type"
               icon={<FaUserAlt />}
@@ -167,20 +203,73 @@ const AddAccount = () => {
                 icon={<MdEmail />}
               />
             </div>
-            <div className={style.buttonandsvg} style={{margin : 'auto'}}>
-<div className="inner m-auto" style={{width : 'fit-content'}}>
+            <div className={style.buttonandsvg} style={{ margin: "auto" }}>
+              <div className="inner m-auto">
                 <div className="svg text-center">
                   <SVGNewAccount />
                 </div>
-    
-                <div className="btnnn text-center w-100 mt-2">
-                  <ButtonSubmit disabled={!formik.isValid} className="btn-main w-100">إضافة حساب</ButtonSubmit>
+
+                <div className="btnnn text-center d-flex flex-row w-100 mt-2 gap-2">
+                  <ButtonSubmit
+                    disabled={!formik.isValid}
+                    className="btn-main w-100"
+                  >
+                  {loading ? "جاري التحميل..." : "اضافة الحساب"}
+                  </ButtonSubmit>
+                  <Button
+                    id="not-clickable"
+                    className="btn-main"
+                    onClick={() => {
+                      formik.resetForm();
+                      formik.setValues({
+                        name: "",
+                        email: "",
+                        password: "",
+                        phone: "",
+                        national: "",
+                        type: "",
+                      });
+                      sessionStorage.removeItem(
+                        `name-${window.location.pathname}`
+                      );
+                      sessionStorage.removeItem(
+                        `email-${window.location.pathname}`
+                      );
+                      sessionStorage.removeItem(
+                        `password-${window.location.pathname}`
+                      );
+                      sessionStorage.removeItem(
+                        `phone-${window.location.pathname}`
+                      );
+                      sessionStorage.removeItem(
+                        `national-${window.location.pathname}`
+                      );
+                      sessionStorage.removeItem(
+                        `type-${window.location.pathname}`
+                      );
+                    }}
+                  >
+                    <BiReset />
+                    <Tooltip
+                      anchorSelect="#not-clickable"
+                      clickable={true}
+                      style={{ fontSize: "12px" }}
+                    >
+                      اعادة تعيين البيانات
+                    </Tooltip>
+                  </Button>
                 </div>
-</div>
-</div>
+              </div>
+            </div>
           </Col>
         </Row>
       </Form>
+      <ToastContainer
+        position="bottom-center"
+        hideProgressBar
+        className="mb-2"
+        rtl={true}
+      />
     </motion.div>
   );
 };

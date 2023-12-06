@@ -6,32 +6,37 @@ import { useFormik } from "formik";
 import { FaUserAlt } from "react-icons/fa";
 import { IoMdSchool } from "react-icons/io";
 import { LiaSchoolSolid } from "react-icons/lia";
-import {
-  AiFillPhone,
-  AiFillRightCircle,
-  AiOutlineNumber,
-} from "react-icons/ai";
+import { GrPowerReset } from "react-icons/gr";
+import { AiFillPhone, AiOutlineNumber } from "react-icons/ai";
 import { FaVirusCovid } from "react-icons/fa6";
-import { GiEgyptianSphinx, GiMedicinePills } from "react-icons/gi";
+import { GiEgyptianSphinx, GiMedicinePills, GiPill } from "react-icons/gi";
 import * as yup from "yup";
 import ButtonSubmit from "../../../components/ButtonSubmit";
 import useDocumentTitle from "../../../hooks/useDocumentTitle";
 import Select from "../../../components/Select/Select";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import MediSelected from "./../../../components/MediSelected/MediSelected";
 import { useContext } from "react";
 import { ShowContext } from "../../../context/ShowContext";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import InputAutoComplete2 from "../../../components/InputAutoComplete2/InputAutoComplete2";
-import axiosApi from "../../../data/axios";
 import LinkWithBack from "../../../components/LinkWithBack/LinkWithBack";
+import { MedicineContext } from "../../../context/MedicinesContext";
+import IconV2 from "../../../components/IconV2/IconV2";
+import { BiBarcodeReader, BiReset } from "react-icons/bi";
+import { useRef } from "react";
+import { Tooltip } from "react-tooltip";
 const Dispense = () => {
+  const { nameOrCode, setNameOrCode, handleNameOrCode } =
+    useContext(MedicineContext);
+  const { items, getMedicines } = useContext(MedicineContext);
   const location = useLocation();
   const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
   useEffect(() => {
     setSpinner(true);
+    setNameOrCode("name");
     const setTime = setTimeout(() => {
       setSpinner(false);
     }, 300);
@@ -39,6 +44,8 @@ const Dispense = () => {
       clearInterval(setTime);
     };
   }, [setSpinner]);
+  const medicineRef = useRef(null);
+  const [error, setError] = useState(null);
   const [change, setChange] = useState(false);
   const [change2, setChange2] = useState(false);
   const falseChange = () => {
@@ -47,31 +54,28 @@ const Dispense = () => {
   const falseChange2 = () => {
     setChange2(false);
   };
-  const [items, setItems] = useState([]);
-  const getMedicines = async () => {
-    const response = await axiosApi.get("../src/data/medicines.json");
-    let names = response.data.map((medi) => medi.brandName);
-    names = names.filter((el) => el !== "" && el.includes(name.toUpperCase()));
-    setItems(names);
-  };
+
   const [mode, setMode] = useState("");
   const [currentId, setId] = useState("");
   const [name, setName] = useState("");
   const [stds, setStds] = useState([]);
-  const [allValues , setAllValues] = useState({})
+  const [allValues, setAllValues] = useState({});
   const [quantity, setQuantity] = useState("");
   const [show, setShow] = useState(false);
   const [medicines, setMedicines] = useState(
-    JSON.parse(
-      sessionStorage.getItem(`medicines-${window.location.pathname}`)
-    ) || []
+    sessionStorage.getItem(`medicines-${location.pathname}`)
+      ? JSON.parse(sessionStorage.getItem(`medicines-${location.pathname}`))
+      : []
   );
   const handleClose = () => {
     setShow(false);
     setName("");
     setQuantity("");
   };
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    setShow(true);
+    setError(null);
+  };
   useDocumentTitle("صرف الأدوية");
   const formik = useFormik({
     validateOnMount: true,
@@ -90,10 +94,7 @@ const Dispense = () => {
     },
     validationSchema: yup.object().shape({
       stdname: yup.string().required("الرجاء ادخال إسم الطالب"),
-      phone: yup
-        .string()
-        .required("الرجاء ادخال رقم الهاتف")
-        ,
+      phone: yup.string().required("الرجاء ادخال رقم الهاتف"),
       national: yup
         .string()
         .required("الرجاء ادخال رقم القومي")
@@ -119,7 +120,21 @@ const Dispense = () => {
       console.log(values);
       formik.resetForm();
       setMedicines([]);
-      sessionStorage.clear();
+      sessionStorage.setItem(`medicines-${window.location.pathname}`, "");
+      sessionStorage.setItem(`stdname-${window.location.pathname}`, "");
+      sessionStorage.setItem(`phone-${window.location.pathname}`, "");
+      sessionStorage.setItem(`national-${window.location.pathname}`, "");
+      sessionStorage.setItem(`collage-${window.location.pathname}`, "");
+      sessionStorage.setItem(`university-year-${window.location.pathname}`, "");
+      sessionStorage.setItem(
+        `prescriptionNumber-${window.location.pathname}`,
+        ""
+      );
+      sessionStorage.setItem(
+        `prescriptionType-${window.location.pathname}`,
+        ""
+      );
+      sessionStorage.setItem(`disease-${window.location.pathname}`, "");
       formik.setValues({
         stdname: "",
         phone: "",
@@ -134,16 +149,30 @@ const Dispense = () => {
   });
   const handleMedicines = (e, name, quantity) => {
     e.preventDefault();
-    const getMedi = [
-      ...medicines,
-      { id: new Date().getTime(), name, quantity },
-    ];
-    setMedicines(getMedi);
-    sessionStorage.setItem(
-      `medicines-${window.location.pathname}`,
-      JSON.stringify(getMedi)
-    );
-    handleClose();
+    const alreadyExists = medicines.find((medi) => medi.name === name);
+    const found = items.find((item) => item === name.trim());
+    if (found && !alreadyExists) {
+      const getMedi = [
+        ...medicines,
+        {
+          id: new Date().getTime(),
+          name: name,
+          quantity,
+        },
+      ];
+      setMedicines(getMedi);
+      sessionStorage.setItem(
+        `medicines-${window.location.pathname}`,
+        JSON.stringify(getMedi)
+      );
+      setError(null);
+      handleClose();
+    } else if (!found) {
+      setError("الرجاء التأكد من ادخال اسم الدواء بشكل صحيح");
+    }
+    else if (alreadyExists) {
+      setError("الدواء موجود بالفعل في الطلبية");
+    }
   };
   const addStds = () => {
     const stdd = [
@@ -155,24 +184,23 @@ const Dispense = () => {
         ["university-year"]: "الفرقة الرابعة",
       },
       {
-        name: 'عمر احمد سعيد السيد',
-        phone: '01516111111',
+        name: "عمر احمد سعيد السيد",
+        phone: "01516111111",
         national: 12356777712345,
-        collage: 'هندسة',
-        ["university-year"]: 'الفرقة الرابعة'
+        collage: "هندسة",
+        ["university-year"]: "الفرقة الرابعة",
       },
       {
-        name: 'احمد محمد احمد',
-        phone: '01024197972',
+        name: "احمد محمد احمد",
+        phone: "01024197972",
         national: 12353282124532,
-        collage: 'هندسة',
-        ["university-year"]: 'الفرقة الرابعة'
-      }
-    ].filter((el) => el.name.includes(formik.values.stdname));
+        collage: "هندسة",
+        ["university-year"]: "الفرقة الرابعة",
+      },
+    ].filter((el) => el.name.startsWith(formik.values.stdname));
     setAllValues(stdd);
     setStds(stdd.map((el) => el.name));
   };
-  
 
   const handleDelete = (id) => {
     const newMedicine = medicines.filter((medi) => medi.id !== id);
@@ -237,7 +265,7 @@ const Dispense = () => {
               name="stdname"
               items={stds}
               allValues={allValues}
-              linkedAttr={["phone" , "national" , "collage" , "university-year"] }
+              linkedAttr={["phone", "national", "collage", "university-year"]}
               dropFunction={addStds}
               direction={"ltr"}
               icon={<FaUserAlt />}
@@ -413,6 +441,69 @@ const Dispense = () => {
                 >
                   إضافة صرف
                 </ButtonSubmit>
+                <Button
+                  id="not-clickable"
+                  className="btn-main"
+                  onClick={() => {
+                    sessionStorage.setItem(
+                      `medicines-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `stdname-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `phone-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `national-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `collage-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `university-year-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `prescriptionNumber-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `prescriptionType-${window.location.pathname}`,
+                      ""
+                    );
+                    sessionStorage.setItem(
+                      `disease-${window.location.pathname}`,
+                      ""
+                    );
+                    setMedicines([]);
+                    formik.resetForm();
+                    formik.setValues({
+                      stdname: "",
+                      phone: "",
+                      national: "",
+                      collage: "",
+                      ["university-year"]: "",
+                      prescriptionNumber: "",
+                      prescriptionType: "",
+                      disease: "",
+                    });
+                  }}
+                >
+                  <BiReset />
+                </Button>
+                <Tooltip
+                  anchorSelect="#not-clickable"
+                  clickable={true}
+                  style={{ fontSize: "12px" }}
+                >
+                  اعادة تعيين البيانات
+                </Tooltip>
               </div>
             </div>
           </Col>
@@ -431,30 +522,66 @@ const Dispense = () => {
             <Form onSubmit={(e) => handleMedicines(e, name, quantity)}>
               <Row>
                 <Col>
-                  <InputAutoComplete2
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      setChange(true);
-                    }}
-                    className="text-end"
-                    width={"100%"}
-                    label={"اسم الدواء"}
-                    type="text"
-                    id="medicine"
-                    name="medicine"
-                    items={items.sort()}
-                    dropFunction={getMedicines}
-                    direction={"ltr"}
-                    icon={<GiMedicinePills />}
-                    linkAdded={"/stock/medicines/add-medicine?return=true"}
-                    message={"الدواء غير موجود , هل تريد اضافته؟"}
-                    setValue={setName}
-                    formik={false}
-                    change={change}
-                    falseChange={falseChange}
-                  />
+                  <div className="d-flex gap-2">
+                    <InputAutoComplete2
+                      ref={medicineRef}
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        setChange(true);
+                        setError(null);
+                      }}
+                      className="text-end "
+                      width={"100%"}
+                      label={
+                        nameOrCode === "name" ? "اسم الدواء" : "كود الدواء"
+                      }
+                      type="text"
+                      id="medicine"
+                      name="medicine"
+                      items={items.sort()}
+                      dropFunction={() => getMedicines(name)}
+                      direction={"ltr"}
+                      icon={
+                        nameOrCode === "name" ? (
+                          <GiMedicinePills />
+                        ) : (
+                          <BiBarcodeReader />
+                        )
+                      }
+                      linkAdded={"/stock/medicines/add-medicine?return=true"}
+                      message={"الدواء غير موجود , هل تريد اضافته؟"}
+                      setValue={setName}
+                      formik={false}
+                      change={change}
+                      error={error}
+                      falseChange={falseChange}
+                    />
+                    <IconV2
+                      id='selectType'
+                      icon={
+                        nameOrCode === "name" ? <BiBarcodeReader /> : <GiPill />
+                      }
+                      onClick={() => {
+                        handleNameOrCode();
+                        setName("");
+                        medicineRef.current.focus();
+                      }}
+                    />
+                                                        <Tooltip
+                  anchorSelect="#selectType"
+                  clickable={true}
+                  place="bottom"
+                  style={{ fontSize: "12px" , zIndex :500 }}
+                >
+                  اختر طريقة البحث
+                </Tooltip>
+                  </div>
+                  <p className={"descriptiveP"}>
+                    يمكنك البحث باستعمال اسم الدواء او الباركود*
+                  </p>
                 </Col>
+
                 <Col>
                   <Input
                     value={quantity}

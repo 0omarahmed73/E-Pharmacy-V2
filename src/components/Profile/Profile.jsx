@@ -20,8 +20,8 @@ const Profile = () => {
         />
       </div>
       <div className="profTexts d-flex flex-column ms-2">
-        <small>د/{user.username}</small>
-        <small>مدير المخزن</small>
+        <small>د/{user.name}</small>
+        <small>{user.role}</small>
       </div>
       <AiFillCaretDown
         size={13}

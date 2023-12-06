@@ -1,24 +1,13 @@
 import style from "./Dashboard.module.css";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { Row } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useContext } from "react";
 import { ShowContext } from "../../context/ShowContext";
 import { motion } from "framer-motion";
 import { AuthContext } from "../../context/AuthContext";
 import { ToastContainer, toast } from "react-toastify";
 import { useRef } from "react";
-import InputAutoComplete2 from "./../../components/InputAutoComplete2/InputAutoComplete2";
-import { FaUserAlt } from "react-icons/fa";
-import { useFormik } from "formik";
-import { Form } from "react-bootstrap";
-import * as Yup from "yup";
-import { useCallback } from "react";
-import ButtonSubmit from "../../components/ButtonSubmit";
-import List from './../../components/List/List';
-import MedicineItem from './../../components/MedicineItem/MedicineItem';
-import { Notification } from './../../components/Notification/Notification';
-import { BiPencil } from "react-icons/bi";
 const Dashboard = () => {
   const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
   const { success, setSuccess, user } = useContext(AuthContext);
@@ -31,17 +20,20 @@ const Dashboard = () => {
       clearInterval(setTime);
     };
   }, [setSpinner]);
-  const isMount = useRef(false);
   useEffect(() => {
-    if (!isMount.current) {
+    const timer = setTimeout(() => {
       if (success) {
         toast.success(`تم تسجيل الدخول بنجاح! ,\n
-        مرحبا بك د/ ${user.username}`);
+        مرحبا بك د/ ${user.name}`);
         setSuccess(false);
       }
-      isMount.current = true;
-    }
+    }, 400);
+  
+    return () => {
+      clearTimeout(timer);
+    };
   }, [success, setSuccess, user.username]);
+  
   useDocumentTitle(" الرئيسية");
   return (
     <motion.div
@@ -57,9 +49,13 @@ const Dashboard = () => {
     >
       {spinner && spinnerElement}
       <h1 className="mainTitle py-2">الرئيسية</h1>
-      <Row>
-      </Row>
-      <ToastContainer position="bottom-center" hideProgressBar  className='mb-2' rtl={true} />
+      <Row></Row>
+      <ToastContainer
+        position="bottom-center"
+        hideProgressBar
+        className="mb-2"
+        rtl={true}
+      />
     </motion.div>
   );
 };

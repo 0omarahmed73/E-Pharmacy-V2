@@ -4,24 +4,30 @@ import style from "./AddMedicine.module.css";
 import { useContext } from "react";
 import { ShowContext } from "../../../../context/ShowContext";
 import { motion } from "framer-motion";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Row, Col, Button } from "react-bootstrap";
 import { Form } from "react-bootstrap";
 import Input from "../../../../components/input/Input";
-import { FaPills, FaPray } from "react-icons/fa";
+import { FaPills } from "react-icons/fa";
 import ButtonSubmit from "../../../../components/ButtonSubmit";
 import { GiMedicinePills } from "react-icons/gi";
 import Select from "../../../../components/Select/Select";
 import { useFormik } from "formik";
 import { PiFactoryFill } from "react-icons/pi";
-import { AiFillRightCircle } from "react-icons/ai";
 import * as Yup from "yup";
 import LinkWithBack from "../../../../components/LinkWithBack/LinkWithBack";
+import { BiReset } from "react-icons/bi";
+import { Tooltip } from "react-tooltip";
+import { MedicineContext } from "../../../../context/MedicinesContext";
+import { ToastContainer, toast } from "react-toastify";
+import { useState } from "react";
 const AddMedicine = () => {
   useDocumentTitle("اضافة دواء جديد");
   const location = useLocation();
   const naviate = useNavigate();
   const { spinnerElement, spinner, setSpinner } = useContext(ShowContext);
+  const {medicineType , submitMedicine} = useContext(MedicineContext);
+  const [loading , setLoading] = useState(false)
   useEffect(() => {
     setSpinner(true);
     const setTime = setTimeout(() => {
@@ -42,9 +48,22 @@ const AddMedicine = () => {
       ar: sessionStorage.getItem(`ar-${location.pathname}`) || "",
     },
     onSubmit: (values) => {
-      console.log(values);
+      values.type = {
+        name: values.type,
+        id : medicineType.findIndex(el => el === values.type) + 1
+      }
+      setLoading(true)
+      try {
+        submitMedicine(values);
+        toast.success("تم اضافة الدواء بنجاح");
       formik.resetForm();
-      sessionStorage.clear();
+      sessionStorage.setItem(`type-${location.pathname}`, "");
+      sessionStorage.setItem(`company-${location.pathname}`, "");
+      sessionStorage.setItem(`code-${location.pathname}`, "");
+      sessionStorage.setItem(`quantity-${location.pathname}`, "");
+      sessionStorage.setItem(`days-${location.pathname}`, "");
+      sessionStorage.setItem(`en-${location.pathname}`, "");
+      sessionStorage.setItem(`ar-${location.pathname}`, "");
       formik.setValues({
         type: "",
         company: "",
@@ -54,6 +73,13 @@ const AddMedicine = () => {
         en: "",
         ar: "",
       });
+      }
+      catch (err) {
+        toast.error("حدث خطأ ما الرجاء المحاولة مرة اخرى");
+      }
+      finally {
+        setLoading(false)
+      }
     },
     validateOnMount: true,
     validationSchema: Yup.object().shape({
@@ -65,7 +91,7 @@ const AddMedicine = () => {
       ),
       en: Yup.string().required("الرجاء ادخال اسم الدواء باللغة الانجليزية"),
       ar: Yup.string().required("الرجاء ادخال اسم الدواء باللغة العربية"),
-      days: Yup.number().required(
+      days: Yup.date().required(
         "الرجاء ادخال عدد الايام المطلوب التنبيه قبلها"
       ),
     }),
@@ -116,9 +142,9 @@ const AddMedicine = () => {
               icon={<FaPills />}
             >
               <option value="">اختر نوع العنصر</option>
-              <option value="اقراص">اقراص</option>
-              <option value="امبولات">امبولات</option>
-              <option value="منوعات">منوعات</option>
+              {medicineType.map(el => {
+                return <option key={crypto.randomUUID()} value={el}>{el}</option>
+              })}
             </Select>
             <Input
               value={formik.values.company}
@@ -158,12 +184,12 @@ const AddMedicine = () => {
                 className="text-end mt-2"
                 width={"100%"}
                 label="التنبيه قبل"
-                type="number"
+                type="date"
                 id="days"
                 name="days"
                 icon={"يوم"}
               />
-              <p className={style.p}>
+              <p className="descriptiveP">
                 *ارسال تنبيه قبل انتهاء الصلاحية بعدد معين من الايام
               </p>
             </div>
@@ -199,7 +225,7 @@ const AddMedicine = () => {
                   name="quantity"
                   icon={"كمية"}
                 />
-                <p className={style.p}>
+                <p className="descriptiveP">
                   *ارسال تنبيه عندما تصبح الكمية المتوفرة من الدواء عدد معين
                 </p>
               </div>
@@ -215,31 +241,74 @@ const AddMedicine = () => {
                   </div>
                 </div>
 
-                <div className="btnnn text-center w-100 mt-2 d-flex flex-row gap-2">
+                <div className="btnnn text-center w-100 mt-2 d-flex flex-row justify-content-center align-items-center gap-2">
                   <ButtonSubmit
-                    disabled={!(formik.isValid)}
+                    disabled={!formik.isValid}
                     className={`btn-main ${
                       location.search.includes("return")
                         ? "w-100"
                         : "w-50 m-auto my-1"
                     }`}
                   >
-                    اضافة الدواء
+                    {loading ? "جاري الاضافة ..." : "اضافة الدواء"}
                   </ButtonSubmit>
                   {location.search.includes("return") && (
                     <Button
                       onClick={() => naviate(-1, { replace: true })}
-                      className="btn-main w-100"
+                      className="btn-main w-100 fontSize12px"
                     >
                       الرجوع الى العملية السابقة
                     </Button>
                   )}
+                  <Button
+                    id="not-clickable"
+                    className={`btn-main w-25 ${
+                      location.search.includes("return")
+                        ? "w-25"
+                        : "w-50 m-auto my-1"
+                    }`}
+                    onClick={() => {
+                      sessionStorage.setItem(`type-${location.pathname}`, "");
+                      sessionStorage.setItem(
+                        `company-${location.pathname}`,
+                        ""
+                      );
+                      sessionStorage.setItem(`code-${location.pathname}`, "");
+                      sessionStorage.setItem(
+                        `quantity-${location.pathname}`,
+                        ""
+                      );
+                      sessionStorage.setItem(`days-${location.pathname}`, "");
+                      sessionStorage.setItem(`en-${location.pathname}`, "");
+                      sessionStorage.setItem(`ar-${location.pathname}`, "");
+                      formik.resetForm();
+                      formik.setValues({
+                        type: "",
+                        company: "",
+                        code: "",
+                        quantity: "",
+                        days: "",
+                        en: "",
+                        ar: "",
+                      });
+                    }}
+                  >
+                    <BiReset />
+                    <Tooltip
+                      anchorSelect="#not-clickable"
+                      clickable={true}
+                      style={{ fontSize: "12px" }}
+                    >
+                      اعادة تعيين البيانات
+                    </Tooltip>
+                  </Button>
                 </div>
               </div>
             </div>
           </Col>
         </Row>
       </Form>
+      <ToastContainer position="bottom-center" hideProgressBar  className='mb-2' rtl={true} />
     </motion.div>
   );
 };

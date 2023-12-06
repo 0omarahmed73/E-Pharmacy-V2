@@ -11,6 +11,7 @@ import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
 import Page404 from "./Pages/Page404/Page404";
 import AddMedicine from "./Pages/Stock/Medicine/AddMedicine/AddMedicine";
+import AllMedicines from "./Pages/New Pages/AllMedicines/AllMedicines";
 
 function App() {
   const {user} = useContext(AuthContext)
@@ -34,6 +35,7 @@ function App() {
         <Route path='/stock/medicines' element={user ? <DefaultLayout /> : <Navigate to='/login' />}>
           <Route index element={user ? <Medicine /> : <Navigate to='/login' />} />
           <Route path='add-medicine' element={user ? <AddMedicine /> : <Navigate to='/login' />} />
+          <Route path='type' element={user ? <AllMedicines /> : <Navigate to='/login' />} />
         </Route>
     </Routes>
     </>

@@ -10,9 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
   const secret = import.meta.env.VITE_SECRET;
-  if (
-    Cookies.get("user")
-  ) {
+  if (Cookies.get("user")) {
     if (
       CryptoJS.AES.decrypt(Cookies.get("user"), secret).toString(
         CryptoJS.enc.Utf8
@@ -65,10 +63,46 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   };
-  console.log();
+
+  const registerUser = async (newUser) => {
+    const response = await fetch("http://localhost:3000/users/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        accessToken: crypto.randomUUID(),
+        id: new Date().getTime(),
+        name: newUser.name,
+        username: newUser.email,
+        password: newUser.password,
+        role: newUser.type,
+        phone: newUser.phone,
+        nationalId: newUser.national,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error registering user");
+    }
+
+    const data = await response.json();
+    return data;
+  };
+  console.log(user);
   return (
     <AuthContext.Provider
-      value={{ user, setUser, login, error, loading, success, setSuccess }}
+      value={{
+        user,
+        setUser,
+        login,
+        error,
+        loading,
+        success,
+        setSuccess,
+        registerUser,
+        setLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>

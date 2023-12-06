@@ -1,104 +1,126 @@
+/* eslint-disable react/prop-types */
 import { FloatingLabel, Form } from "react-bootstrap";
 import style from "./InputAutoComplete2.module.css";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { forwardRef } from "react";
+// eslint-disable-next-line react/display-name
+const InputAutoComplete2 = forwardRef(
+  (
+    {
+      label,
+      icon,
+      name,
+      id,
+      width,
+      linkAdded,
+      message,
+      value = "",
+      autoFocus = true,
+      error,
+      touched,
+      setValue,
+      direction = "rtl",
+      dropFunction,
+      items,
+      formik = false,
+      allValues,
+      linkedAttr,
+      change,
+      falseChange,
+      ...props
+    },
+    ref
+  ) => {
+    const [showDropDown, setShowDropDown] = useState(false);
+    const [selected, setSelected] = useState(false);
+    useEffect(() => {
+      if (formik) {
+        if (error && touched) {
+          setShowDropDown(false);
+        }
+      } else {
+        if (error) {
+          setShowDropDown(false);
+        }
+      }
+    }, [error, formik, touched]);
+    useEffect(() => {
+      sessionStorage.setItem(`${name}-${window.location.pathname}`, value);
+      if (value.trim().length > 0 && !selected && change) {
+        setShowDropDown(true);
+        dropFunction();
+      } else {
+        setShowDropDown(false);
+      }
 
-const InputAutoComplete2 = ({
-  label,
-  icon,
-  name,
-  id,
-  width,
-  linkAdded,
-  message,
-  value = "",
-  error,
-  touched,
-  setValue,
-  direction,
-  dropFunction,
-  items,
-  formik = false,
-  allValues,
-  linkedAttr,
-  change,
-  falseChange,
-  ...props
-}) => {
-  const [showDropDown, setShowDropDown] = useState(false);
-  const [selected, setSelected] = useState(false);
-  useEffect(() => {
-    sessionStorage.setItem(`${name}-${window.location.pathname}`, value);
-    if (value.trim().length > 0 && !selected && change) {
-      setShowDropDown(true);
-      dropFunction();
-    } else {
-      setShowDropDown(false);
-    }
-
-    if (selected && change) {
-      setSelected(false);
-      setShowDropDown(true);
-    }
-  }, [name, value, selected, change]);
-  return (
-    <Form.Group className={style.input} style={{ width: width }}>
-      <FloatingLabel controlId={id} label={label}>
-        <Form.Control
-          autoComplete="off"
-          value={value}
-          name={name}
-          {...props}
-          isInvalid={error && touched}
-        />
-        <p className={style.icon}>{icon}</p>
-      </FloatingLabel>
-      <div className={style.under}></div>
-      <Form.Text className="text-danger">
-        {error && touched ? error : ""}
-      </Form.Text>
-      {showDropDown && (
-        <div className={style.dropDownMenu} style={{ direction: direction }}>
-          {items.length ? (
-            items.map((item, index) => (
-              <div
-                key={index}
-                onClick={() => {
-                  falseChange();
-                  formik ? setValue(name, item) : setValue(item);
-                  formik && linkedAttr
-                    ? linkedAttr.map((attr) => {
-                        setValue(
-                          attr,
-                          allValues.find((val) => val.name === item)[attr]
-                        );
-                      })
-                    : !formik && linkedAttr
-                    ? linkedAttr.map((attr) => {
-                        attr.setValue(
-                          allValues.find((val) => val.name === item)[attr.name]
-                        );
-                      })
-                    : null;
-                  setShowDropDown(false);
-                  setSelected(true);
-                }}
-                className={style.item}
-              >
-                {item}
-              </div>
-            ))
-          ) : (
-            <Link to={linkAdded} className={style.item}>
-              {" "}
-              {message}{" "}
-            </Link>
-          )}
-        </div>
-      )}
-    </Form.Group>
-  );
-};
+      if (selected && change) {
+        setSelected(false);
+        setShowDropDown(true);
+      }
+    }, [name, value, selected, change]);
+    return (
+      <Form.Group className={style.input} style={{ width: width }}>
+        <FloatingLabel controlId={id} label={label}>
+          <Form.Control
+            ref={ref}
+            autoFocus={autoFocus}
+            style={{ direction: direction }}
+            autoComplete="off"
+            value={value}
+            name={name}
+            {...props}
+            isInvalid={formik ? error && touched : error}
+          />
+          <p className={style.icon}>{icon}</p>
+        </FloatingLabel>
+        <div className={style.under}></div>
+        <Form.Text className="text-danger">
+          {formik ? (error && touched ? error : "") : error}
+        </Form.Text>
+        {showDropDown && (
+          <div className={style.dropDownMenu} style={{ direction: direction }}>
+            {items.length ? (
+              items.map((item, index) => (
+                <div
+                  key={index}
+                  onClick={() => {
+                    falseChange();
+                    formik ? setValue(name, item) : setValue(item);
+                    formik && linkedAttr
+                      ? linkedAttr.map((attr) => {
+                          setValue(
+                            attr,
+                            allValues.find((val) => val.name === item)[attr]
+                          );
+                        })
+                      : !formik && linkedAttr
+                      ? linkedAttr.map((attr) => {
+                          attr.setValue(
+                            allValues.find((val) => val.name === item)[attr.name]
+                          );
+                        })
+                      : null;
+                    setShowDropDown(false);
+                    setSelected(true);
+                  }}
+                  className={style.item}
+                >
+                  {item}
+                </div>
+              ))
+            ) : (
+              <Link to={linkAdded} className={style.item}>
+                {" "}
+                {message}{" "}
+              </Link>
+            )}
+          </div>
+        )}
+      </Form.Group>
+    );
+  }
+);
 
 export default InputAutoComplete2;
